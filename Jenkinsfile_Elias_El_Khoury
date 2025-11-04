@@ -6,7 +6,7 @@ pipeline {
     PYTHON = 'python3'
   }
 
-  options { timestamps(); ansiColor('xterm') }
+  options { timestamps() }
 
   stages {
     stage('Checkout') {
