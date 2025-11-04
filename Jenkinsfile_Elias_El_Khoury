@@ -20,7 +20,6 @@ pipeline {
           if [ ! -d "${VENV}" ]; then ${PYTHON} -m venv ${VENV}; fi
           . ${VENV}/bin/activate
           pip install --upgrade pip
-          # Install project deps (if any) + CI tools
           [ -f requirements.txt ] && pip install -r requirements.txt || true
           pip install flake8 pytest coverage bandit
         """
@@ -41,8 +40,7 @@ pipeline {
         sh """
           . ${VENV}/bin/activate
           mkdir -p test-results
-          # Set PYTHONPATH to repo root so tests can import app.py
-          PYTHONPATH="$PWD" pytest -v --tb=short --junitxml=test-results/pytest.xml
+          PYTHONPATH="$WORKSPACE" pytest -v --tb=short --junitxml=test-results/pytest.xml
         """
       }
     }
@@ -51,7 +49,7 @@ pipeline {
       steps {
         sh """
           . ${VENV}/bin/activate
-          PYTHONPATH="$PWD" coverage run -m pytest -q
+          PYTHONPATH="$WORKSPACE" coverage run -m pytest -q
           coverage report -m
           coverage xml -o coverage.xml
         """
@@ -68,7 +66,7 @@ pipeline {
     }
 
     stage('Deploy (local)') {
-      when { expression { fileExists('deploy.sh') } } // only if you add a Unix script
+      when { expression { fileExists('deploy.sh') } }
       steps {
         sh """
           . ${VENV}/bin/activate
